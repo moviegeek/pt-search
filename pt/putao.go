@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"strconv"
@@ -202,14 +201,7 @@ func (pt *Putao) dumpCookie() {
 }
 
 // NewPutao creates a new Putao provider, with the given user name and login password
-func NewPutao(username, password string) *Putao {
-	cookieJar, _ := cookiejar.New(nil)
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-		Jar: cookieJar,
-	}
+func NewPutao(username, password string, client *http.Client) *Putao {
 	putao := &Putao{username, password, client}
 
 	err := putao.tryLogin()

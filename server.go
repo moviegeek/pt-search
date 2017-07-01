@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"os"
 
 	"bitbucket.org/laputa/movie-search/pt"
@@ -45,7 +46,15 @@ func main() {
 		log.Fatal("please set pt password in PT_PASS environment variable")
 	}
 
-	putao := pt.NewPutao(ptUser, ptPass)
+	cookieJar, _ := cookiejar.New(nil)
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Jar: cookieJar,
+	}
+
+	putao := pt.NewPutao(ptUser, ptPass, client)
 
 	log.Printf("created putao search provider %v", putao)
 
