@@ -1,35 +1,17 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"os"
+
+	"github.com/juju/persistent-cookiejar"
+
+	"github.com/go-martini/martini"
+	"github.com/martini-contrib/render"
 
 	"bitbucket.org/laputa/movie-search/pt"
 )
-
-func searchHandler(provider pt.Provider) func(res http.ResponseWriter, req *http.Request) {
-	return func(res http.ResponseWriter, req *http.Request) {
-		q := req.URL.Query().Get("q")
-		movies, err := provider.FindAll(q)
-		if err != nil {
-			log.Printf("failed to search pt site: %v", err)
-			res.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		err = json.NewEncoder(res).Encode(movies)
-		if err != nil {
-			log.Printf("could not encode movies to json: %v", err)
-			res.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		res.WriteHeader(http.StatusOK)
-	}
-}
 
 func getenv(env, def string) string {
 	value := os.Getenv(env)
@@ -40,6 +22,9 @@ func getenv(env, def string) string {
 }
 
 func main() {
+	port := getenv("PORT", "4000")
+	port = ":" + port
+
 	ptUser := getenv("PT_USER", "laputa")
 	ptPass := getenv("PT_PASS", "")
 	if ptPass == "" {
@@ -56,11 +41,25 @@ func main() {
 
 	putao := pt.NewPutao(ptUser, ptPass, client)
 
+	cookieJar.Save()
+
 	log.Printf("created putao search provider %v", putao)
 
-	log.Printf("started server at :8080")
+	log.Printf("started server at %s", port)
 
-	http.HandleFunc("/search", searchHandler(putao))
+	m := martini.Classic()
+	m.Use(render.Renderer())
 
-	http.ListenAndServe(":8080", nil)
+	m.Get("/api/search", func(req *http.Request, r render.Render) {
+		query := req.FormValue("q")
+		movies, err := putao.FindAll(query)
+		if err != nil {
+			log.Printf("failed to search pt site: %v", err)
+			r.Error(http.StatusBadRequest)
+		}
+
+		r.JSON(http.StatusOK, movies)
+	})
+
+	m.RunOnAddr(port)
 }

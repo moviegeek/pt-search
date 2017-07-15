@@ -12,8 +12,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-
-	"bitbucket.org/laputa/movie-search/movie"
 )
 
 const (
@@ -34,7 +32,7 @@ type Putao struct {
 
 // FindAll searchs the query in pt.sjtu.edu.cn and return a list of movies as
 // a result
-func (pt *Putao) FindAll(query string) (movie.List, error) {
+func (pt *Putao) FindAll(query string) ([]PTMovie, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		log.Printf("search by empty query string, will return all torrents")
@@ -59,21 +57,21 @@ func (pt *Putao) FindAll(query string) (movie.List, error) {
 	resp, err := pt.client.Do(req)
 	if err != nil {
 		log.Printf("failed to send search request %s: %v", req.URL, err)
-		return movie.List{}, err
+		return []PTMovie{}, err
 	}
 
 	defer resp.Body.Close()
 	movies, err := getMoviesFromSearch(resp.Body)
 	if err != nil {
 		log.Printf("could not parse movies from search page: %v", err)
-		return movie.List{}, err
+		return []PTMovie{}, err
 	}
 
 	return movies, nil
 }
 
-func getMoviesFromSearch(result io.Reader) (movie.List, error) {
-	movies := movie.List{}
+func getMoviesFromSearch(result io.Reader) ([]PTMovie, error) {
+	movies := []PTMovie{}
 	log.Printf("create root document from response")
 	doc, err := goquery.NewDocumentFromReader(result)
 	if err != nil {
@@ -84,7 +82,7 @@ func getMoviesFromSearch(result io.Reader) (movie.List, error) {
 	doc.Find("table.torrents>tbody>tr:nth-child(n+2)").Each(func(i int, s *goquery.Selection) {
 		log.Printf("movie %d: %#v", i, s.Text())
 		title := s.Find("td:nth-child(2) table.torrentname>tbody>tr>td:first-child>a").Text()
-		movies = append(movies, movie.Item{Title: title})
+		movies = append(movies, PTMovie{Title: title})
 	})
 
 	log.Printf("found movies from pt.sjtu.edu.ch: %+v", movies)
