@@ -31,6 +31,12 @@ func main() {
 		log.Fatal("please set pt password in PT_PASS environment variable")
 	}
 
+	hdcUser := getenv("HDC_USER", "laputa")
+	hdcPass := getenv("HDC_PASS", "")
+	if hdcPass == "" {
+		log.Fatal("please set hdc password in HDC_PASS environment variable")
+	}
+
 	cookieJar, _ := cookiejar.New(nil)
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -40,10 +46,9 @@ func main() {
 	}
 
 	putao := pt.NewPutao(ptUser, ptPass, client)
+	hdc := pt.NewHDC(hdcUser, hdcPass, client)
 
 	cookieJar.Save()
-
-	log.Printf("created putao search provider %v", putao)
 
 	log.Printf("started server at %s", port)
 
@@ -52,13 +57,19 @@ func main() {
 
 	m.Get("/api/search", func(req *http.Request, r render.Render) {
 		query := req.FormValue("q")
-		movies, err := putao.FindAll(query)
+		putaoResult, err := putao.FindAll(query)
 		if err != nil {
 			log.Printf("failed to search pt site: %v", err)
 			r.Error(http.StatusBadRequest)
 		}
 
-		r.JSON(http.StatusOK, movies)
+		hdcResult, err := hdc.FindAll(query)
+		if err != nil {
+			log.Printf("failed to search hdc site: %v", err)
+			r.Error(http.StatusBadRequest)
+		}
+
+		r.JSON(http.StatusOK, append(putaoResult, hdcResult...))
 	})
 
 	m.Post("/api/queue", func(req *http.Request) (int, string) {

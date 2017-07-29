@@ -7,6 +7,7 @@ type PTMovie struct {
 	Age    string `json:"age"`
 	Size   string `json:"size"`
 	Seeder string `json:"seeder"`
+	URL    string `json:"url"`
 }
 
 // Provider defines the interface for all PT torrent search providers

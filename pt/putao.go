@@ -62,7 +62,7 @@ func (pt *Putao) FindAll(query string) ([]PTMovie, error) {
 	}
 
 	defer resp.Body.Close()
-	movies, err := getMoviesFromSearch(resp.Body)
+	movies, err := pt.getMoviesFromSearch(resp.Body)
 	if err != nil {
 		log.Printf("could not parse movies from search page: %v", err)
 		return []PTMovie{}, err
@@ -71,7 +71,7 @@ func (pt *Putao) FindAll(query string) ([]PTMovie, error) {
 	return movies, nil
 }
 
-func getMoviesFromSearch(result io.Reader) ([]PTMovie, error) {
+func (pt *Putao) getMoviesFromSearch(result io.Reader) ([]PTMovie, error) {
 	movies := []PTMovie{}
 	log.Printf("create root document from response")
 	doc, err := goquery.NewDocumentFromReader(result)
@@ -91,26 +91,28 @@ func getMoviesFromSearch(result io.Reader) ([]PTMovie, error) {
 		idReg := regexp.MustCompile(`id=([0-9]+)&`)
 		href, exist := titleElem.Attr("href")
 		id := "-1"
+		url := ""
 		if exist {
 			result := idReg.FindStringSubmatch(href)
 			if len(result) > 1 || result[1] != "" {
 				id = result[1]
 			}
+			url = fmt.Sprintf("%s/%s", site, href)
 		}
 
-		age := s.Find("td:nth-child(4)").Text()
-		size := s.Find("td:nth-child(5)").Text()
-		seeders := s.Find("td:nth-child(6)").Text()
+		age := s.ChildrenFiltered("td:nth-child(4)").Text()
+		size := s.ChildrenFiltered("td:nth-child(5)").Text()
+		seeders := s.ChildrenFiltered("td:nth-child(6)").Text()
 
-		movies = append(movies, PTMovie{From: "putao", ID: id, Title: title, Age: age, Size: size, Seeder: seeders})
+		movies = append(movies, PTMovie{From: "putao", ID: id, Title: title, Age: age, Size: size, Seeder: seeders, URL: url})
 	})
-
-	log.Printf("found movies from pt.sjtu.edu.ch: %+v", movies)
 
 	return movies, nil
 }
 
 func (pt *Putao) tryLogin() error {
+	log.Printf("trying to login to %s", siteLogin)
+
 	resp, err := pt.client.Get(site)
 	if err != nil {
 		log.Printf("failed to send get request to home page %s: %v", site, err)
