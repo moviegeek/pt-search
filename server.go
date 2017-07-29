@@ -69,7 +69,7 @@ func main() {
 			r.Error(http.StatusBadRequest)
 		}
 
-		r.JSON(http.StatusOK, append(putaoResult, hdcResult...))
+		r.JSON(http.StatusOK, append(hdcResult, putaoResult...))
 	})
 
 	m.Post("/api/queue", func(req *http.Request) (int, string) {
