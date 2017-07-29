@@ -33,7 +33,7 @@ type Putao struct {
 
 // FindAll searchs the query in pt.sjtu.edu.cn and return a list of movies as
 // a result
-func (pt *Putao) FindAll(query string) ([]PTMovie, error) {
+func (pt *Putao) FindAll(query string) ([]Movie, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		log.Printf("search by empty query string, will return all torrents")
@@ -58,21 +58,21 @@ func (pt *Putao) FindAll(query string) ([]PTMovie, error) {
 	resp, err := pt.client.Do(req)
 	if err != nil {
 		log.Printf("failed to send search request %s: %v", req.URL, err)
-		return []PTMovie{}, err
+		return []Movie{}, err
 	}
 
 	defer resp.Body.Close()
 	movies, err := pt.getMoviesFromSearch(resp.Body)
 	if err != nil {
 		log.Printf("could not parse movies from search page: %v", err)
-		return []PTMovie{}, err
+		return []Movie{}, err
 	}
 
 	return movies, nil
 }
 
-func (pt *Putao) getMoviesFromSearch(result io.Reader) ([]PTMovie, error) {
-	movies := []PTMovie{}
+func (pt *Putao) getMoviesFromSearch(result io.Reader) ([]Movie, error) {
+	movies := []Movie{}
 	log.Printf("create root document from response")
 	doc, err := goquery.NewDocumentFromReader(result)
 	if err != nil {
@@ -104,7 +104,7 @@ func (pt *Putao) getMoviesFromSearch(result io.Reader) ([]PTMovie, error) {
 		size := s.ChildrenFiltered("td:nth-child(5)").Text()
 		seeders := s.ChildrenFiltered("td:nth-child(6)").Text()
 
-		movies = append(movies, PTMovie{From: "putao", ID: id, Title: title, Age: age, Size: size, Seeder: seeders, URL: url})
+		movies = append(movies, Movie{From: "putao", ID: id, Title: title, Age: age, Size: size, Seeder: seeders, URL: url})
 	})
 
 	return movies, nil

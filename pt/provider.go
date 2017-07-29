@@ -1,6 +1,7 @@
 package pt
 
-type PTMovie struct {
+// Movie is the general movie structure for all pt site search result
+type Movie struct {
 	ID     string `json:"id"`
 	From   string `json:"from"`
 	Title  string `json:"title"`
@@ -12,5 +13,5 @@ type PTMovie struct {
 
 // Provider defines the interface for all PT torrent search providers
 type Provider interface {
-	FindAll(string) ([]PTMovie, error)
+	FindAll(string) ([]Movie, error)
 }
