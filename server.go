@@ -61,5 +61,21 @@ func main() {
 		r.JSON(http.StatusOK, movies)
 	})
 
+	m.Post("/api/queue", func(req *http.Request) (int, string) {
+		from := req.FormValue("from")
+		if from == "" {
+			return http.StatusBadRequest, "you need to specify download from where: pt or hdc"
+		}
+
+		id := req.FormValue("id")
+		if id == "" {
+			return http.StatusBadRequest, "you need to specify the torrent id"
+		}
+
+		log.Printf("got download request for torrent %s - %s", from, id)
+
+		return http.StatusOK, "added to download queue"
+	})
+
 	m.RunOnAddr(port)
 }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -81,8 +82,27 @@ func getMoviesFromSearch(result io.Reader) ([]PTMovie, error) {
 
 	doc.Find("table.torrents>tbody>tr:nth-child(n+2)").Each(func(i int, s *goquery.Selection) {
 		log.Printf("movie %d: %#v", i, s.Text())
-		title := s.Find("td:nth-child(2) table.torrentname>tbody>tr>td:first-child>a").Text()
-		movies = append(movies, PTMovie{Title: title})
+
+		titleElem := s.Find("td:nth-child(2) table.torrentname>tbody>tr>td:first-child>a")
+		title, exist := titleElem.Attr("title")
+		if !exist {
+			title = titleElem.Text()
+		}
+		idReg := regexp.MustCompile(`id=([0-9]+)&`)
+		href, exist := titleElem.Attr("href")
+		id := "-1"
+		if exist {
+			result := idReg.FindStringSubmatch(href)
+			if len(result) > 1 || result[1] != "" {
+				id = result[1]
+			}
+		}
+
+		age := s.Find("td:nth-child(4)").Text()
+		size := s.Find("td:nth-child(5)").Text()
+		seeders := s.Find("td:nth-child(6)").Text()
+
+		movies = append(movies, PTMovie{From: "putao", ID: id, Title: title, Age: age, Size: size, Seeder: seeders})
 	})
 
 	log.Printf("found movies from pt.sjtu.edu.ch: %+v", movies)
