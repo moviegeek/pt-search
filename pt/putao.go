@@ -3,16 +3,17 @@ package pt
 import (
 	"bytes"
 	"fmt"
+	"image/color"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/eliukblau/pixterm/ansimage"
 )
 
 const (
@@ -173,22 +174,16 @@ func (pt *Putao) promptCheckcode() (string, error) {
 
 	defer resp.Body.Close()
 
-	imageFileName := "checkcode.png"
-	imageFile, err := os.Create(imageFileName)
-	if err != nil {
-		log.Printf("could not create image file %s: %v", imageFileName, err)
-		return "", err
-	}
+	pix, err := ansimage.NewFromReader(color.RGBA{0, 0, 0, 0}, resp.Body)
 
-	defer imageFile.Close()
-
-	_, err = io.Copy(imageFile, resp.Body)
 	if err != nil {
-		log.Printf("could not write checkcode image to local file: %v", err)
+		log.Printf("could not create ansimage from response, %v", err)
 		return "", nil
 	}
 
-	log.Printf("please open image file %s, and type your answer: ", imageFileName)
+	pix.Draw()
+
+	log.Printf("please input answer of above checkcode: ")
 
 	var answer string
 	_, err = fmt.Scanln(&answer)

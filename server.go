@@ -37,7 +37,9 @@ func main() {
 		log.Fatal("please set hdc password in HDC_PASS environment variable")
 	}
 
-	cookieJar, _ := cookiejar.New(nil)
+	cookieFile := getenv("GOCOOKIES", ".cookies")
+
+	cookieJar, _ := cookiejar.New(&cookiejar.Options{Filename: cookieFile})
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -48,6 +50,7 @@ func main() {
 	putao := pt.NewPutao(ptUser, ptPass, client)
 	hdc := pt.NewHDC(hdcUser, hdcPass, client)
 
+	log.Printf("cookie is saved in %s", cookieFile)
 	cookieJar.Save()
 
 	log.Printf("started server at %s", port)
