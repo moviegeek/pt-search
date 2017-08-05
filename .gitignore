@@ -1,2 +1,4 @@
 *.png
 .cookies
+node_modules/
+build/
