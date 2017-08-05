@@ -22,7 +22,7 @@ func getenv(env, def string) string {
 }
 
 func main() {
-	port := getenv("PORT", "4000")
+	port := getenv("PORT", "3000")
 	port = ":" + port
 
 	ptUser := getenv("PT_USER", "laputa")
@@ -57,6 +57,7 @@ func main() {
 
 	m := martini.Classic()
 	m.Use(render.Renderer())
+	m.Use(martini.Static("./build", martini.StaticOptions{Fallback: "/index.html", Exclude: "/api/"}))
 
 	m.Get("/api/search", func(req *http.Request, r render.Render) {
 		query := req.FormValue("q")
