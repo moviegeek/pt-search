@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +12,11 @@ import (
 	"github.com/martini-contrib/render"
 
 	"bitbucket.org/laputa/movie-search/pt"
+)
+
+const (
+	// GCLOUD_FUNCTION_URL is the google cloud function for torrent downloader
+	GCLOUD_FUNCTION_URL = "https://us-central1-movie-downloader-176704.cloudfunctions.net/movieDownloader"
 )
 
 func getenv(env, def string) string {
@@ -89,8 +95,38 @@ func main() {
 
 		log.Printf("got download request for torrent %s - %s", from, id)
 
+		err := sendAddTorrentRequest(from, id)
+		if err != nil {
+			return http.StatusBadRequest, "failed to send add torrent request"
+		}
+
 		return http.StatusOK, "added to download queue"
 	})
 
 	m.RunOnAddr(port)
+}
+
+func sendAddTorrentRequest(from, id string) error {
+	client := &http.Client{}
+
+	url := fmt.Sprintf("%s?source=%s&id=%s", GCLOUD_FUNCTION_URL, from, id)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Printf("Failed to create new request object %s", err.Error())
+		return err
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Printf("Failed to send request: %s", err.Error())
+		return err
+	}
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("failed response: %d %s", resp.StatusCode, resp.Body)
+	}
+
+	return nil
 }

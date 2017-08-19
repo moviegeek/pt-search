@@ -3,7 +3,7 @@ import { Grid, Navbar, Button, Form, FormGroup, InputGroup, FormControl, ListGro
 
 class App extends Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
       value: "",
       results: []
@@ -71,6 +71,9 @@ class App extends Component {
 class MovieItem extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      downloadStatus: ""
+    }
     this.handleDownload = this.handleDownload.bind(this)
   }
 
@@ -78,10 +81,14 @@ class MovieItem extends Component {
     let apiUrl = `/api/queue?from=${this.props.from}&id=${this.props.id}`
     console.log('send download request: ' + apiUrl)
 
+    this.setState({downloadStatus: "downloading"})
     fetch(apiUrl, {method: 'POST'})
       .then((response) => {
         if (!response.ok) {
+          this.setState({downloadStatus: "failed"})
           throw new Error('failed to send download request')
+        } else {
+          this.setState({downloadStatus: "finished"})
         }
       }).catch((err) => {
         console.log(err)
@@ -100,11 +107,32 @@ class MovieItem extends Component {
         <span>{this.props.age} </span>
         <span>{this.props.size} </span>
         <span>{this.props.seeder}</span>
-        <Button bsStyle="link" bsSize="sm" onClick={this.handleDownload}>
-          <Glyphicon glyph="download-alt" />
-        </Button>
+        <DownloadButton downloadStatus={this.state.downloadStatus} onClick={this.handleDownload}></DownloadButton>
       </div>
     </ListGroupItem>
+  }
+}
+
+const DownloadButton = (props) => {
+  switch(props.downloadStatus) {
+    case 'downloading':
+      return (
+        <Button bsStyle="link" bsSize="sm" onClick={props.onClick} disabled>
+          <Glyphicon glyph="sort-by-attributes" />
+        </Button>
+      )
+    case 'finished':
+      return (
+        <Button bsStyle="link" bsSize="sm" disabled>
+          <Glyphicon glyph="saved" />
+        </Button>
+      )
+    default :
+      return (
+        <Button bsStyle="link" bsSize="sm" onClick={props.onClick}>
+          <Glyphicon glyph="download-alt"/>
+        </Button>
+      )
   }
 }
 
