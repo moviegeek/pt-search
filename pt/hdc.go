@@ -193,7 +193,7 @@ func (hdc *HDChina) promptCheckcode() (string, string, error) {
 
 	defer resp.Body.Close()
 
-	pix, err := ansimage.NewFromReader(color.RGBA{0, 0, 0, 0}, resp.Body)
+	pix, err := ansimage.NewFromReader(resp.Body, color.RGBA{0, 0, 0, 0}, ansimage.DitheringWithBlocks)
 
 	if err != nil {
 		log.Printf("could not create ansimage from response, %v", err)
