@@ -4,7 +4,7 @@ LABEL maintainer="justlaputa@gmail.com"
 
 RUN apk --no-cache add ca-certificates && update-ca-certificates
 
-COPY ./movie-search /app/movie-search
+COPY ./pt-search /app/pt-search
 COPY ./build /app/build
 
 WORKDIR /app
@@ -12,4 +12,4 @@ WORKDIR /app
 ENV GOCOOKIES /app/cookies/.cookies
 VOLUME /app/cookies
 
-ENTRYPOINT ["/app/movie-search"]
+ENTRYPOINT ["/app/pt-search"]
