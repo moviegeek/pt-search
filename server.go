@@ -11,7 +11,7 @@ import (
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 
-	"bitbucket.org/laputa/movie-search/pt"
+	"bitbucket.org/laputa/pt-search/pt"
 )
 
 const (
