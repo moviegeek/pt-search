@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"os"
-
-	"github.com/juju/persistent-cookiejar"
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 
-	"bitbucket.org/laputa/pt-search/pt"
+	"github.com/moviegeek/pt-search/pt"
 )
 
 const (

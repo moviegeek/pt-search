@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/eliukblau/pixterm/ansimage"
+	"github.com/eliukblau/pixterm/pkg/ansimage"
 )
 
 const (
