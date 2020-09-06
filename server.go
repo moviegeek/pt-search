@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"os"
+
+	cookiejar "github.com/juju/persistent-cookiejar"
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
@@ -27,22 +28,22 @@ func getenv(env, def string) string {
 }
 
 func main() {
-	port := getenv("PORT", "3000")
+	port := getenv("PORT", "4000")
 	port = ":" + port
 
 	ptUser := getenv("PT_USER", "laputa")
-	ptPass := getenv("PT_PASS", "")
+	ptPass := getenv("PT_PASS", "x")
 	if ptPass == "" {
 		log.Fatal("please set pt password in PT_PASS environment variable")
 	}
 
 	hdcUser := getenv("HDC_USER", "laputa")
-	hdcPass := getenv("HDC_PASS", "")
+	hdcPass := getenv("HDC_PASS", "x")
 	if hdcPass == "" {
 		log.Fatal("please set hdc password in HDC_PASS environment variable")
 	}
 
-	cookieFile := getenv("GOCOOKIES", ".cookies")
+	cookieFile := getenv("GOCOOKIES", "cookies-fixed.json")
 
 	cookieJar, _ := cookiejar.New(&cookiejar.Options{Filename: cookieFile})
 	client := &http.Client{

@@ -43,8 +43,24 @@ func (hdc *HDChina) FindAll(query string) ([]Movie, error) {
 
 	req, _ := http.NewRequest("GET", hdcSiteTorrent, nil)
 	q := req.URL.Query()
-	q.Add("cat17", "1")
+	q.Add("cat5", "1")
 	q.Add("cat9", "1")
+	q.Add("cat13", "1")
+	q.Add("cat14", "1")
+	q.Add("cat15", "1")
+	q.Add("cat16", "1")
+	q.Add("cat17", "1")
+	q.Add("cat20", "1")
+	q.Add("cat21", "1")
+	q.Add("cat22", "1")
+	q.Add("cat23", "1")
+	q.Add("cat24", "1")
+	q.Add("cat25", "1")
+	q.Add("cat26", "1")
+	q.Add("cat401", "1")
+	q.Add("cat405", "1")
+	q.Add("cat409", "1")
+	q.Add("cat410", "1")
 	q.Add("incldead", "1")
 	q.Add("spstate", "0")
 	q.Add("inclbookmarked", "0")
@@ -97,11 +113,13 @@ func (hdc *HDChina) getMoviesFromSearch(result io.Reader) ([]Movie, error) {
 			url = fmt.Sprintf("%s/%s", hdcSite, href)
 		}
 
+		subTitle := s.Find("td:nth-child(2) table.tbname>tbody>tr>td:nth-child(2)>h4").Text()
+		subTitle = strings.TrimSpace(subTitle)
 		age := s.ChildrenFiltered("td:nth-child(4)").Text()
 		size := s.ChildrenFiltered("td:nth-child(5)").Text()
 		seeders := s.ChildrenFiltered("td:nth-child(6)").Text()
 
-		movies = append(movies, Movie{From: "hdc", ID: id, Title: title, Age: age, Size: size, Seeder: seeders, URL: url})
+		movies = append(movies, Movie{From: "hdc", ID: id, Title: title, SubTitle: subTitle, Age: age, Size: size, Seeder: seeders, URL: url})
 	})
 
 	return movies, nil

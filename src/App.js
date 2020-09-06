@@ -101,6 +101,7 @@ class MovieItem extends Component {
         <a href={this.props.url} target="_blank">
           {this.props.title}
         </a>
+        <p>{this.props.sub_title}</p>
       </div>
       <div>
         <span>[{this.props.from}] </span>
