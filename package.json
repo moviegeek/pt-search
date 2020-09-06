@@ -10,6 +10,7 @@
     "react-scripts": "1.0.10"
   },
   "proxy": "http://localhost:4000",
+  "homepage": "https://storage.googleapis.com/pt-search",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

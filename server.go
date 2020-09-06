@@ -9,6 +9,7 @@ import (
 	cookiejar "github.com/juju/persistent-cookiejar"
 
 	"github.com/go-martini/martini"
+	"github.com/martini-contrib/cors"
 	"github.com/martini-contrib/render"
 
 	"github.com/moviegeek/pt-search/pt"
@@ -43,7 +44,7 @@ func main() {
 		log.Fatal("please set hdc password in HDC_PASS environment variable")
 	}
 
-	cookieFile := getenv("GOCOOKIES", "cookies-fixed.json")
+	cookieFile := getenv("GOCOOKIES", "cookies.json")
 
 	cookieJar, _ := cookiejar.New(&cookiejar.Options{Filename: cookieFile})
 	client := &http.Client{
@@ -62,7 +63,17 @@ func main() {
 	log.Printf("started server at %s", port)
 
 	m := martini.Classic()
+
+	m.Use(cors.Allow(&cors.Options{
+		AllowOrigins:     []string{"https://storage.googleapis.com"},
+		AllowMethods:     []string{"GET", "POST", "OPTIONS", "HEAD"},
+		AllowHeaders:     []string{"Origin", "Accept", "Content-Type", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+	}))
+
 	m.Use(render.Renderer())
+
 	m.Use(martini.Static("./build", martini.StaticOptions{Fallback: "/index.html", Exclude: "/api/"}))
 
 	m.Get("/api/search", func(req *http.Request, r render.Render) {

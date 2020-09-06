@@ -23,7 +23,7 @@ class App extends Component {
       return
     }
 
-    fetch(`/api/search?q=${query}`)
+    fetch(`https://pt-search-backend-g5thmbut3q-uc.a.run.app/api/search?q=${query}`)
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -78,7 +78,7 @@ class MovieItem extends Component {
   }
 
   handleDownload(e) {
-    let apiUrl = `/api/queue?from=${this.props.from}&id=${this.props.id}`
+    let apiUrl = `https://pt-search-backend-g5thmbut3q-uc.a.run.app/api/queue?from=${this.props.from}&id=${this.props.id}`
     console.log('send download request: ' + apiUrl)
 
     this.setState({downloadStatus: "downloading"})
