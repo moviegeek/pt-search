@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	cookiejar "github.com/juju/persistent-cookiejar"
+	"github.com/justlaputa/cookiejar"
+	"golang.org/x/net/publicsuffix"
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/cors"
@@ -44,21 +45,21 @@ func main() {
 		log.Fatal("please set hdc password in HDC_PASS environment variable")
 	}
 
-	cookieFile := getenv("GOCOOKIES", "cookies.json")
+	jar := cookiejar.NewPersistentJar(&cookiejar.PersistentJarOptions{
+		publicsuffix.List, "movie-221500", "Cookies",
+	})
 
-	cookieJar, _ := cookiejar.New(&cookiejar.Options{Filename: cookieFile})
+	jar.LoadFromFile("cookies.json")
+
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
-		Jar: cookieJar,
+		Jar: jar,
 	}
 
 	putao := pt.NewPutao(ptUser, ptPass, client)
 	hdc := pt.NewHDC(hdcUser, hdcPass, client)
-
-	log.Printf("cookie is saved in %s", cookieFile)
-	cookieJar.Save()
 
 	log.Printf("started server at %s", port)
 

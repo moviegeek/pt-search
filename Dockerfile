@@ -7,6 +7,5 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates && update-ca-certificates
 
 COPY ./pt-search .
-COPY cookies.json .
 
 ENTRYPOINT ["/app/pt-search"]
