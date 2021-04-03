@@ -101,14 +101,14 @@ func (hdc *HDChina) getMoviesFromSearch(result io.Reader) ([]Movie, error) {
 
 		titleElem := s.Find("td:nth-child(2) table.tbname>tbody>tr>td:nth-child(2)>h3>a")
 		title := titleElem.Text()
-		idReg := regexp.MustCompile(`id=([0-9]+)&`)
+		idReg := regexp.MustCompile(`id=([0-9]+)`)
 		href, exist := titleElem.Attr("href")
 		id := "-1"
 		url := ""
 		if exist {
 			href = strings.TrimSuffix(href, "&hit=1")
 			result := idReg.FindStringSubmatch(href)
-			if len(result) > 1 || result[1] != "" {
+			if len(result) > 1 && result[1] != "" {
 				id = result[1]
 			}
 			url = fmt.Sprintf("%s/%s", hdcSite, href)
