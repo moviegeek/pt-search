@@ -106,6 +106,7 @@ func (hdc *HDChina) getMoviesFromSearch(result io.Reader) ([]Movie, error) {
 		id := "-1"
 		url := ""
 		if exist {
+			href = strings.TrimSuffix(href, "&hit=1")
 			result := idReg.FindStringSubmatch(href)
 			if len(result) > 1 || result[1] != "" {
 				id = result[1]
