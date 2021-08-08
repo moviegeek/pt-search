@@ -46,7 +46,7 @@ func main() {
 	}
 
 	jar := cookiejar.NewPersistentJar(&cookiejar.PersistentJarOptions{
-		publicsuffix.List, "movie-221500", "Cookies",
+		publicsuffix.List, "pt-search-9c319", "Cookies",
 	})
 
 	jar.LoadFromFile("cookies.json")

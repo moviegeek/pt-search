@@ -17,4 +17,4 @@ deploy:
 		--memory 2Gi \
 		--timeout 15m \
 		--image $(IMAGENAME) \
-		--project movie-221500
+		--project pt-search-9c319
