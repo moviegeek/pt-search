@@ -1,11 +1,12 @@
+FROM golang:1.16 as builder
+WORKDIR /src
+COPY ./pt ./pt
+COPY *.go go.* ./
+RUN CGO_ENABLED=0 go build -o pt-search .
+
 FROM alpine:3.5
-
-LABEL maintainer="justlaputa@gmail.com"
-
 WORKDIR /app
-
 RUN apk --no-cache add ca-certificates && update-ca-certificates
-
-COPY ./pt-search .
+COPY --from=builder /src/pt-search ./
 
 ENTRYPOINT ["/app/pt-search"]
