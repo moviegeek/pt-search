@@ -6,7 +6,7 @@ class App extends Component {
     super(props)
     this.state = {
       value: "",
-      results: []
+      results: new Map()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleSearch = this.handleSearch.bind(this)
@@ -27,12 +27,31 @@ class App extends Component {
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
-          results: responseJson
+          results: this._groupSearchResults(responseJson)
         })
       })
       .catch((error) => {
 
       })
+  }
+
+  _groupSearchResults(response) {
+    let movieMap = new Map()
+    for (let r of response) {
+      let key = `${r.Title}:${r.Year}`
+      if (!movieMap.has(key)) {
+        movieMap.set(key, {
+          title: r.Title,
+          year: r.Year,
+          resources: []
+        })
+      }
+      movieMap.get(key).resources.push(r)
+    }
+
+    console.dir(movieMap)
+
+    return movieMap
   }
 
   render() {
@@ -96,21 +115,31 @@ class MovieItem extends Component {
   }
 
   render() {
-    return <ListGroupItem>
-      <div>
-        <a href={this.props.url} target="_blank">
-          {this.props.title}
-        </a>
-        <p>{this.props.sub_title}</p>
-      </div>
-      <div>
-        <span>[{this.props.from}] </span>
-        <span>{this.props.age} </span>
-        <span>{this.props.size} </span>
-        <span>{this.props.seeder}</span>
-        <DownloadButton downloadStatus={this.state.downloadStatus} onClick={this.handleDownload}></DownloadButton>
-      </div>
-    </ListGroupItem>
+    const resourceItems = this.props.resources.map((r, i) => {
+      return <ListGroupItem key={i}>
+        <div>
+          <a href={r.Tracker.url} target="_blank">
+            {r.Tracker.title}
+          </a>
+          <p>{r.Tracker.sub_title}</p>
+        </div>
+        <div>
+          <span>[{r.Tracker.from}] </span>
+          <span>{r.Resource.Source} </span>
+          <span>{r.Resource.Resolution} </span>
+          <span>{r.Resource.Group} </span>
+          <span>{r.Tracker.age} </span>
+          <span>{r.Tracker.size} </span>
+          <span>{r.Tracker.seeder}</span>
+          <DownloadButton downloadStatus={this.state.downloadStatus} onClick={this.handleDownload}></DownloadButton>
+        </div>
+      </ListGroupItem>
+    })
+
+    return <div>
+      <span>{this.props.title} {this.props.year}</span>
+      <ListGroup>{resourceItems}</ListGroup>
+    </div>
   }
 }
 
@@ -138,12 +167,20 @@ const DownloadButton = (props) => {
 }
 
 const ResultList = (props) => {
-  const items = props.results
-  const listItems = items.map((item) =>
-    <MovieItem {...item} key={item.from + item.id}></MovieItem>
-  )
+  const movies = props.results
+  const movieItems = []
+  
+  for (let m of movies.values()) {
+    movieItems.push(
+      <li key={m.title + '-' + m.year}>
+        <MovieItem title={m.title} year={m.year} resources={m.resources}></MovieItem>
+      </li>
+    )
+  }
 
-  return <ListGroup>{listItems}</ListGroup>
+  return <div>
+    <ul>{movieItems}</ul>
+  </div>
 }
 
 export default App;

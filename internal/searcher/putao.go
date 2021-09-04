@@ -1,4 +1,4 @@
-package pt
+package searcher
 
 import (
 	"bytes"

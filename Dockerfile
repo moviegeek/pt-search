@@ -1,6 +1,6 @@
 FROM golang:1.16 as builder
 WORKDIR /src
-COPY ./pt ./pt
+COPY ./internal ./internal
 COPY *.go go.* ./
 RUN CGO_ENABLED=0 go build -o pt-search .
 

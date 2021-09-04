@@ -1,4 +1,4 @@
-package pt
+package searcher
 
 // Movie is the general movie structure for all pt site search result
 type Movie struct {

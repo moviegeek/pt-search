@@ -13,8 +13,17 @@ import (
 	"github.com/martini-contrib/cors"
 	"github.com/martini-contrib/render"
 
-	"github.com/moviegeek/pt-search/pt"
+	"github.com/moviegeek/pt-search/internal/parser"
+	"github.com/moviegeek/pt-search/internal/searcher"
 )
+
+// MovieResponse response object for one movie
+type MovieResponse struct {
+	Title    string
+	Year     int
+	Tracker  searcher.Movie
+	Resource parser.MovieInfo
+}
 
 const (
 	// GCLOUD_FUNCTION_URL is the google cloud function for torrent downloader
@@ -58,8 +67,8 @@ func main() {
 		Jar: jar,
 	}
 
-	putao := pt.NewPutao(ptUser, ptPass, client)
-	hdc := pt.NewHDC(hdcUser, hdcPass, client)
+	putao := searcher.NewPutao(ptUser, ptPass, client)
+	hdc := searcher.NewHDC(hdcUser, hdcPass, client)
 
 	log.Printf("started server at %s", port)
 
@@ -91,7 +100,8 @@ func main() {
 			r.Error(http.StatusBadRequest)
 		}
 
-		r.JSON(http.StatusOK, append(hdcResult, putaoResult...))
+		searchResults := append(hdcResult, putaoResult...)
+		r.JSON(http.StatusOK, parseResults(searchResults))
 	})
 
 	m.Post("/api/queue", func(req *http.Request) (int, string) {
@@ -116,6 +126,17 @@ func main() {
 	})
 
 	m.RunOnAddr(port)
+}
+
+func parseResults(searchResults []searcher.Movie) []MovieResponse {
+	results := []MovieResponse{}
+
+	for _, r := range searchResults {
+		i := parser.ParseTitle(r.Title)
+		results = append(results, MovieResponse{i.Title, i.Year, r, i})
+	}
+
+	return results
 }
 
 func sendAddTorrentRequest(from, id string) error {
