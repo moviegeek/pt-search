@@ -10,9 +10,11 @@ type Movie struct {
 	Size     string `json:"size"`
 	Seeder   string `json:"seeder"`
 	URL      string `json:"url"`
+	Discount string `json:"discount"`
 }
 
 // Provider defines the interface for all PT torrent search providers
 type Provider interface {
 	FindAll(string) ([]Movie, error)
+	Bookmarks() ([]Movie, error)
 }

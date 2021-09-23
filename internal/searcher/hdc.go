@@ -33,7 +33,7 @@ type HDChina struct {
 	client   *http.Client
 }
 
-// FindAll searchs the query in pt.sjtu.edu.cn and return a list of movies as
+// FindAll searchs the query in hdchina.org and return a list of movies as
 // a result
 func (hdc *HDChina) FindAll(query string) ([]Movie, error) {
 	query = strings.TrimSpace(query)
@@ -41,34 +41,57 @@ func (hdc *HDChina) FindAll(query string) ([]Movie, error) {
 		log.Printf("search by empty query string, will return all torrents")
 	}
 
+	params := map[string]string{
+		"cat5":           "1",
+		"cat9":           "1",
+		"cat13":          "1",
+		"cat14":          "1",
+		"cat15":          "1",
+		"cat16":          "1",
+		"cat17":          "1",
+		"cat20":          "1",
+		"cat21":          "1",
+		"cat22":          "1",
+		"cat23":          "1",
+		"cat24":          "1",
+		"cat25":          "1",
+		"cat26":          "1",
+		"cat401":         "1",
+		"cat405":         "1",
+		"cat409":         "1",
+		"cat410":         "1",
+		"incldead":       "1",
+		"spstate":        "0",
+		"inclbookmarked": "0",
+		"boardid":        "0",
+		"seeders":        "",
+		"search_area":    "0",
+		"search_mode":    "0",
+		"search":         query,
+	}
+
+	return hdc.getTorrentsByQuery(params)
+}
+
+// Bookmarks return all bookmarked movies
+func (hdc *HDChina) Bookmarks() ([]Movie, error) {
+	params := map[string]string{
+		"inclbookmarked": "1",
+		"allsec":         "1",
+		"incldead":       "0",
+	}
+
+	return hdc.getTorrentsByQuery(params)
+}
+
+func (hdc *HDChina) getTorrentsByQuery(params map[string]string) ([]Movie, error) {
 	req, _ := http.NewRequest("GET", hdcSiteTorrent, nil)
 	q := req.URL.Query()
-	q.Add("cat5", "1")
-	q.Add("cat9", "1")
-	q.Add("cat13", "1")
-	q.Add("cat14", "1")
-	q.Add("cat15", "1")
-	q.Add("cat16", "1")
-	q.Add("cat17", "1")
-	q.Add("cat20", "1")
-	q.Add("cat21", "1")
-	q.Add("cat22", "1")
-	q.Add("cat23", "1")
-	q.Add("cat24", "1")
-	q.Add("cat25", "1")
-	q.Add("cat26", "1")
-	q.Add("cat401", "1")
-	q.Add("cat405", "1")
-	q.Add("cat409", "1")
-	q.Add("cat410", "1")
-	q.Add("incldead", "1")
-	q.Add("spstate", "0")
-	q.Add("inclbookmarked", "0")
-	q.Add("boardid", "0")
-	q.Add("seeders", "")
-	q.Add("search_area", "0")
-	q.Add("search_mode", "0")
-	q.Add("search", query)
+
+	for k, v := range params {
+		q.Add(k, v)
+	}
+
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := hdc.client.Do(req)
@@ -120,7 +143,16 @@ func (hdc *HDChina) getMoviesFromSearch(result io.Reader) ([]Movie, error) {
 		size := s.ChildrenFiltered("td:nth-child(5)").Text()
 		seeders := s.ChildrenFiltered("td:nth-child(6)").Text()
 
-		movies = append(movies, Movie{From: "hdc", ID: id, Title: title, SubTitle: subTitle, Age: age, Size: size, Seeder: seeders, URL: url})
+		movies = append(movies, Movie{
+			From:     "hdc",
+			ID:       id,
+			Title:    title,
+			SubTitle: subTitle,
+			Age:      age,
+			Size:     size,
+			Seeder:   seeders,
+			URL:      url,
+		})
 	})
 
 	return movies, nil
